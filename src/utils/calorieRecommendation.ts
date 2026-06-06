@@ -3,6 +3,7 @@ import type {
   BodyProfile,
   CalorieRecommendation,
   Gender,
+  MealNutritionProfile,
   WeightGoalType,
 } from '../types'
 
@@ -42,6 +43,19 @@ export function calculateBmr(profile: BodyProfile): number {
 function clampDailyCalories(calories: number, gender: Gender): number {
   const min = gender === 'female' ? 1200 : 1500
   return Math.round(Math.min(3500, Math.max(min, calories)))
+}
+
+export function mealProfileForGoal(
+  goalType: WeightGoalType,
+): MealNutritionProfile {
+  switch (goalType) {
+    case 'lose':
+      return 'low-fat'
+    case 'gain':
+      return 'high-protein'
+    default:
+      return 'balanced'
+  }
 }
 
 export function getWeightGoalType(profile: BodyProfile): WeightGoalType {

@@ -1,4 +1,4 @@
-import { getIngredientCategory } from '../data/nutritionCategories'
+import { getResolvedNutritionCategory } from '../data/nutritionCategories'
 import { findNutritionEntry } from '../data/nutritionDictionary'
 import type {
   GoalSettings,
@@ -33,7 +33,10 @@ export function buildMealPlan(
   const calorieGap = totalIngredientCalories - totalTargetCalories
 
   const eligible = resolved.filter((ing) => {
-    if (goals.mealProfile === 'no-carb' && getIngredientCategory(ing.nutritionId) === 'carb') {
+    if (
+      goals.mealProfile === 'no-carb' &&
+      getResolvedNutritionCategory(ing) === 'carb'
+    ) {
       return false
     }
     return true

@@ -3,12 +3,9 @@ import type { BodyProfile, Gender } from '../types'
 import {
   ACTIVITY_OPTIONS,
   isBodyProfileComplete,
+  mealProfileForGoal,
   recommendDailyCalories,
 } from '../utils/calorieRecommendation'
-import {
-  mealProfileForGoal,
-  recommendRecipesForGoal,
-} from '../utils/goalRecipeRecommendation'
 
 export interface ApplyPlanPayload {
   calories: number
@@ -22,12 +19,6 @@ interface BodyProfilePanelProps {
   appliedCalories?: number
   appliedPlanDays?: number
   onApplyPlan: (payload: ApplyPlanPayload) => void
-}
-
-const MEAL_LABEL: Record<string, string> = {
-  breakfast: '早餐',
-  lunch: '午餐',
-  dinner: '晚餐',
 }
 
 export function BodyProfilePanel({
@@ -44,11 +35,6 @@ export function BodyProfilePanel({
   const recommendation = useMemo(
     () => recommendDailyCalories(profile),
     [profile],
-  )
-
-  const recipeRecommendations = useMemo(
-    () => recommendRecipesForGoal(profile, recommendation),
-    [profile, recommendation],
   )
 
   const isPlanApplied =
@@ -192,7 +178,6 @@ export function BodyProfilePanel({
       </div>
 
       {recommendation ? (
-        <>
           <div className="mt-5 rounded-xl border border-sky-200/80 bg-white/80 p-4">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
@@ -291,36 +276,6 @@ export function BodyProfilePanel({
               )}
             </dl>
           </div>
-
-          {recipeRecommendations.length > 0 && (
-            <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/30 p-4">
-              <h3 className="text-sm font-semibold text-slate-800">推荐食谱</h3>
-              <p className="mt-1 text-xs text-slate-500">
-                根据{recommendation.goalType === 'lose' ? '减重' : recommendation.goalType === 'gain' ? '增重' : '维持'}
-                目标筛选，可在下方膳食计划中用对应食材制作。
-              </p>
-              <ul className="mt-3 space-y-2">
-                {recipeRecommendations.map((item) => (
-                  <li
-                    key={`${item.meal}-${item.recipeId}`}
-                    className="rounded-lg bg-white px-3 py-2 ring-1 ring-emerald-100"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
-                        {MEAL_LABEL[item.meal]}
-                      </span>
-                      <span className="text-sm font-medium text-slate-800">
-                        {item.name}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500">{item.summary}</p>
-                    <p className="mt-0.5 text-xs text-emerald-700">{item.reason}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </>
       ) : (
         <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
           请填写完整且合理的身体数据与计划周期（7–365 天）以生成推荐方案。

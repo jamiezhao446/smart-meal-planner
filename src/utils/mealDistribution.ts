@@ -1,9 +1,11 @@
 import {
   getIngredientCategory,
+  getResolvedNutritionCategory,
   isBreakfastDairy,
   isBreakfastStaple,
   isLunchDinnerMeat,
   isLunchDinnerStapleSplit,
+  isResolvedStaple,
   isStapleCarb,
   NO_BREAKFAST_STAPLE_IDS,
 } from '../data/nutritionCategories'
@@ -66,7 +68,7 @@ function shouldIncludeIngredient(
   ing: ResolvedIngredient,
   profile: MealNutritionProfile,
 ): boolean {
-  const cat = getIngredientCategory(ing.nutritionId)
+  const cat = getResolvedNutritionCategory(ing)
   if (profile === 'no-carb' && cat === 'carb') return false
   return categoriesForProfile(profile).includes(cat) || cat === 'other'
 }
@@ -89,7 +91,7 @@ function canAssignStapleToMeal(
   store: Map<string, number>,
   carbIngs: ResolvedIngredient[],
 ): boolean {
-  if (!isStapleCarb(ing.nutritionId)) return true
+  if (!isResolvedStaple(ing)) return true
   if (meal === 1 && NO_BREAKFAST_STAPLE_IDS.has(ing.nutritionId)) return false
   if (mealHasStaple(day, meal, store, carbIngs)) {
     const existing = carbIngs.find(
@@ -308,7 +310,7 @@ function assignVegetablesForDay(
   store: Map<string, number>,
 ): void {
   const vegPortions = portions.filter(
-    (p) => getIngredientCategory(p.ing.nutritionId) === 'vegetable' && p.dailyQty > 0,
+    (p) => getResolvedNutritionCategory(p.ing) === 'vegetable' && p.dailyQty > 0,
   )
   if (vegPortions.length === 0) return
 
@@ -408,7 +410,7 @@ function assignProteinsForDay(
 ): void {
   const proteins = portions
     .filter(
-      (p) => getIngredientCategory(p.ing.nutritionId) === 'protein' && p.dailyQty > 0,
+      (p) => getResolvedNutritionCategory(p.ing) === 'protein' && p.dailyQty > 0,
     )
     .sort((a, b) => proteinAssignOrder(a.ing.nutritionId) - proteinAssignOrder(b.ing.nutritionId))
 
@@ -457,7 +459,7 @@ function assignCarbsForDay(
   carbIngs: ResolvedIngredient[],
 ): void {
   const carbs = portions.filter(
-    (p) => isStapleCarb(p.ing.nutritionId) && p.dailyQty > 0,
+    (p) => isResolvedStaple(p.ing) && p.dailyQty > 0,
   )
 
   for (const p of carbs) {
@@ -688,7 +690,7 @@ function planSingleDay(
   dailyCalorieTarget: number,
   store: Map<string, number>,
 ): void {
-  const carbIngs = eligible.filter((ing) => isStapleCarb(ing.nutritionId))
+  const carbIngs = eligible.filter((ing) => isResolvedStaple(ing))
   const ratios = mealCalorieRatios(mealsPerDay)
   const mealTargets = ratios.map((r) => r * dailyCalorieTarget)
 
@@ -732,12 +734,10 @@ export function computeInventoryStock(
   eligible: ResolvedIngredient[],
 ): DayCategoryStock {
   return {
-    protein: eligible.some(
-      (i) => getIngredientCategory(i.nutritionId) === 'protein',
-    ),
-    carb: eligible.some((i) => getIngredientCategory(i.nutritionId) === 'carb'),
+    protein: eligible.some((i) => getResolvedNutritionCategory(i) === 'protein'),
+    carb: eligible.some((i) => getResolvedNutritionCategory(i) === 'carb'),
     vegetable: eligible.some(
-      (i) => getIngredientCategory(i.nutritionId) === 'vegetable',
+      (i) => getResolvedNutritionCategory(i) === 'vegetable',
     ),
   }
 }

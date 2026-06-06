@@ -13,6 +13,7 @@ import {
 } from './utils/bodyProfileStorage'
 import { recommendDailyCalories } from './utils/calorieRecommendation'
 import { loadCompletedMeals, toggleCompleted } from './utils/mealCompletion'
+import { ensureIngredientCategories } from './utils/ingredientCategory'
 import { buildMealPlan } from './utils/mealPlanner'
 
 const DEFAULT_GOALS: GoalSettings = {
@@ -22,16 +23,18 @@ const DEFAULT_GOALS: GoalSettings = {
   mealProfile: 'balanced',
 }
 
-const DEFAULT_INGREDIENTS: UserIngredient[] = [
-  { id: '1', name: '鸡蛋', quantity: 6, unit: '个' },
-  { id: '2', name: '番茄', quantity: 3, unit: '个' },
-  { id: '3', name: '鸡胸肉', quantity: 400, unit: 'g' },
-  { id: '4', name: '大米', quantity: 500, unit: 'g' },
-  { id: '5', name: '西兰花', quantity: 300, unit: 'g' },
-]
+const DEFAULT_INGREDIENTS: UserIngredient[] = ensureIngredientCategories([
+  { id: '1', name: '鸡蛋', quantity: 6, unit: '个', category: 'protein' },
+  { id: '2', name: '番茄', quantity: 3, unit: '个', category: 'veg' },
+  { id: '3', name: '鸡胸肉', quantity: 400, unit: 'g', category: 'protein' },
+  { id: '4', name: '大米', quantity: 500, unit: 'g', category: 'staple' },
+  { id: '5', name: '西兰花', quantity: 300, unit: 'g', category: 'veg' },
+])
 
 function App() {
-  const [ingredients, setIngredients] = useState<UserIngredient[]>(DEFAULT_INGREDIENTS)
+  const [ingredients, setIngredients] = useState<UserIngredient[]>(() =>
+    ensureIngredientCategories(DEFAULT_INGREDIENTS),
+  )
   const [bodyProfile, setBodyProfile] = useState<BodyProfile>(() => loadBodyProfile())
   const [goals, setGoals] = useState<GoalSettings>(DEFAULT_GOALS)
   const [completedMeals, setCompletedMeals] = useState<Set<string>>(() =>

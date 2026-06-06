@@ -1,4 +1,4 @@
-import type { NutritionCategory } from '../types'
+import type { IngredientInputCategory, NutritionCategory } from '../types'
 
 /** 主食碳水类目（同一餐最多 1 种） */
 export const STAPLE_CARB_IDS = new Set([
@@ -94,10 +94,36 @@ export const INGREDIENT_CATEGORY: Record<string, NutritionCategory> = {
   grape: 'vegetable',
   kiwi: 'vegetable',
   watermelon: 'vegetable',
+  peanut: 'other',
+  'cooking-oil': 'other',
 }
 
 export function getIngredientCategory(nutritionId: string): NutritionCategory {
   return INGREDIENT_CATEGORY[nutritionId] ?? 'other'
+}
+
+/** 优先读取用户录入的 category 字段 */
+export function getResolvedNutritionCategory(ing: {
+  category: IngredientInputCategory
+  nutritionId: string
+}): NutritionCategory {
+  switch (ing.category) {
+    case 'staple':
+      return 'carb'
+    case 'protein':
+      return 'protein'
+    case 'veg':
+      return 'vegetable'
+    case 'oil':
+      return 'other'
+  }
+}
+
+export function isResolvedStaple(ing: {
+  category: IngredientInputCategory
+  nutritionId: string
+}): boolean {
+  return ing.category === 'staple'
 }
 
 export function isStapleCarb(nutritionId: string): boolean {

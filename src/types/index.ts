@@ -57,14 +57,6 @@ export interface CalorieRecommendation {
   planWarning?: string
 }
 
-export interface GoalRecipeRecommendation {
-  meal: 'breakfast' | 'lunch' | 'dinner'
-  recipeId: string
-  name: string
-  summary: string
-  reason: string
-}
-
 export interface NutritionEntry {
   id: string
   name: string
@@ -78,11 +70,15 @@ export interface NutritionEntry {
   unitConversions: UnitConversion[]
 }
 
+/** 食材录入面板分类 */
+export type IngredientInputCategory = 'staple' | 'protein' | 'veg' | 'oil'
+
 export interface UserIngredient {
   id: string
   name: string
   quantity: number
   unit: MeasureUnit
+  category: IngredientInputCategory
 }
 
 export interface GoalSettings {
