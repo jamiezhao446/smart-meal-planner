@@ -130,7 +130,7 @@ function App() {
         )}
 
         {activeTab === 'ingredients' && (
-          <div className="mx-auto max-w-2xl">
+          <div className="mx-auto max-w-6xl">
             <IngredientInput items={ingredients} onChange={setIngredients} />
           </div>
         )}

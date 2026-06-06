@@ -25,14 +25,14 @@ export const INPUT_CATEGORY_META: Record<
   protein: {
     label: '肉蛋奶蛋白',
     hint: '肉、蛋、奶、豆等优质蛋白',
-    panelClass: 'border-sky-100 bg-sky-50/20',
-    badgeClass: 'bg-sky-100 text-sky-800',
+    panelClass: 'border-emerald-100 bg-emerald-50/20',
+    badgeClass: 'bg-emerald-100 text-emerald-800',
   },
   veg: {
     label: '蔬菜水果',
     hint: '蔬菜与水果',
-    panelClass: 'border-emerald-100 bg-emerald-50/20',
-    badgeClass: 'bg-emerald-100 text-emerald-800',
+    panelClass: 'border-teal-100 bg-teal-50/20',
+    badgeClass: 'bg-teal-100 text-teal-800',
   },
   oil: {
     label: '坚果油脂',
