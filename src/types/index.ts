@@ -24,12 +24,16 @@ export type ActivityLevel =
   | 'active'
   | 'very-active'
 
+export type WeightGoalType = 'lose' | 'gain' | 'maintain'
+
 export interface BodyProfile {
   gender: Gender
   age: number
   heightCm: number
   currentWeightKg: number
   targetWeightKg: number
+  /** 计划达成目标体重的天数 */
+  planDurationDays: number
   activityLevel: ActivityLevel
 }
 
@@ -37,10 +41,28 @@ export interface CalorieRecommendation {
   bmr: number
   maintenanceCalories: number
   recommendedCalories: number
+  goalType: WeightGoalType
   goalLabel: string
   calorieAdjustment: number
-  /** 预估每周体重变化（kg，负值为减重） */
+  /** 计划周期内需变化的总体重 (kg)，正值为减重 */
+  totalWeightChangeKg: number
+  /** 按周期均摊的每日体重变化 (kg/天)，正值为减重 */
+  plannedDailyWeightChangeKg: number
+  /** 按推荐热量预估的实际每日体重变化 (kg/天) */
+  effectiveDailyWeightChangeKg: number
   weeklyWeightChangeKg: number
+  planDurationDays: number
+  /** 若计划过快，建议延长到的最少天数 */
+  suggestedMinDays?: number
+  planWarning?: string
+}
+
+export interface GoalRecipeRecommendation {
+  meal: 'breakfast' | 'lunch' | 'dinner'
+  recipeId: string
+  name: string
+  summary: string
+  reason: string
 }
 
 export interface NutritionEntry {

@@ -75,9 +75,21 @@ function App() {
     setGoals((g) => ({ ...g, mealProfile }))
   }
 
-  const handleApplyRecommendedCalories = useCallback((calories: number) => {
-    setGoals((g) => ({ ...g, dailyCalorieTarget: calories }))
-  }, [])
+  const handleApplyPlan = useCallback(
+    (payload: {
+      calories: number
+      planDays: number
+      mealProfile: GoalSettings['mealProfile']
+    }) => {
+      setGoals((g) => ({
+        ...g,
+        dailyCalorieTarget: payload.calories,
+        days: payload.planDays,
+        mealProfile: payload.mealProfile,
+      }))
+    },
+    [],
+  )
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-emerald-50/30">
@@ -98,7 +110,8 @@ function App() {
             profile={bodyProfile}
             onChange={setBodyProfile}
             appliedCalories={goals.dailyCalorieTarget}
-            onApplyRecommended={handleApplyRecommendedCalories}
+            appliedPlanDays={goals.days}
+            onApplyPlan={handleApplyPlan}
           />
           <GoalSettingsPanel
             goals={goals}

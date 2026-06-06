@@ -8,6 +8,7 @@ export const DEFAULT_BODY_PROFILE: BodyProfile = {
   heightCm: 165,
   currentWeightKg: 60,
   targetWeightKg: 55,
+  planDurationDays: 60,
   activityLevel: 'light',
 }
 
@@ -31,6 +32,12 @@ export function loadBodyProfile(): BodyProfile {
         30,
         250,
         DEFAULT_BODY_PROFILE.targetWeightKg,
+      ),
+      planDurationDays: clampNum(
+        parsed.planDurationDays,
+        7,
+        365,
+        DEFAULT_BODY_PROFILE.planDurationDays,
       ),
       activityLevel: isActivityLevel(parsed.activityLevel)
         ? parsed.activityLevel

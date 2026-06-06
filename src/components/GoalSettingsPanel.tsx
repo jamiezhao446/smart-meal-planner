@@ -70,7 +70,7 @@ export function GoalSettingsPanel({
         </label>
       </div>
       <p className="mt-3 text-xs text-slate-500">
-        共 {goals.days * goals.mealsPerDay} 个餐次；每天总摄入固定，每餐按营养配比均衡分配。
+        共 {goals.days * goals.mealsPerDay} 个餐次（规划天数可与上方计划周期同步）；每天总摄入固定，每餐按营养配比均衡分配。
       </p>
     </section>
   )
