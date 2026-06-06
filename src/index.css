@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+body {
+  margin: 0;
+  font-family:
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
