@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AppTabNav, type AppTab } from './components/AppTabNav'
 import { BodyProfilePanel } from './components/BodyProfilePanel'
 import { CalorieDashboard } from './components/CalorieDashboard'
 import { GoalSettingsPanel } from './components/GoalSettingsPanel'
@@ -32,6 +33,7 @@ const DEFAULT_INGREDIENTS: UserIngredient[] = ensureIngredientCategories([
 ])
 
 function App() {
+  const [activeTab, setActiveTab] = useState<AppTab>('plan')
   const [ingredients, setIngredients] = useState<UserIngredient[]>(() =>
     ensureIngredientCategories(DEFAULT_INGREDIENTS),
   )
@@ -107,37 +109,50 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,420px)_1fr] lg:items-start sm:px-6">
-        <aside className="space-y-5">
-          <BodyProfilePanel
-            profile={bodyProfile}
-            onChange={setBodyProfile}
-            appliedCalories={goals.dailyCalorieTarget}
-            appliedPlanDays={goals.days}
-            onApplyPlan={handleApplyPlan}
-          />
-          <GoalSettingsPanel
-            goals={goals}
-            onChange={setGoals}
-            recommendedCalories={calorieRecommendation?.recommendedCalories}
-          />
-          <IngredientInput items={ingredients} onChange={setIngredients} />
-          <NutritionPreferencePanel
-            profile={goals.mealProfile}
-            onChange={handleProfileChange}
-          />
-        </aside>
+      <AppTabNav active={activeTab} onChange={setActiveTab} />
 
-        <div className="space-y-5 lg:sticky lg:top-6">
-          <CalorieDashboard plan={plan} mealsPerDay={goals.mealsPerDay} />
-          <NutritionAnalysisPanel ingredients={ingredients} hasPlan={hasPlan} />
-          <MealPlanBoard
-            plan={plan}
-            days={goals.days}
-            completedMeals={completedMeals}
-            onToggleComplete={handleToggleComplete}
-          />
-        </div>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {activeTab === 'plan' && (
+          <div className="mx-auto max-w-2xl space-y-5">
+            <BodyProfilePanel
+              profile={bodyProfile}
+              onChange={setBodyProfile}
+              appliedCalories={goals.dailyCalorieTarget}
+              appliedPlanDays={goals.days}
+              onApplyPlan={handleApplyPlan}
+            />
+            <GoalSettingsPanel
+              goals={goals}
+              onChange={setGoals}
+              recommendedCalories={calorieRecommendation?.recommendedCalories}
+            />
+          </div>
+        )}
+
+        {activeTab === 'ingredients' && (
+          <div className="mx-auto max-w-2xl">
+            <IngredientInput items={ingredients} onChange={setIngredients} />
+          </div>
+        )}
+
+        {activeTab === 'meals' && (
+          <div className="space-y-5">
+            <div className="mx-auto max-w-2xl">
+              <NutritionPreferencePanel
+                profile={goals.mealProfile}
+                onChange={handleProfileChange}
+              />
+            </div>
+            <CalorieDashboard plan={plan} mealsPerDay={goals.mealsPerDay} />
+            <NutritionAnalysisPanel ingredients={ingredients} hasPlan={hasPlan} />
+            <MealPlanBoard
+              plan={plan}
+              days={goals.days}
+              completedMeals={completedMeals}
+              onToggleComplete={handleToggleComplete}
+            />
+          </div>
+        )}
       </main>
     </div>
   )
