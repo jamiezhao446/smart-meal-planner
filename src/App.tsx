@@ -4,6 +4,7 @@ import { BodyProfilePanel } from './components/BodyProfilePanel'
 import { CalorieDashboard } from './components/CalorieDashboard'
 import { GoalSettingsPanel } from './components/GoalSettingsPanel'
 import { IngredientInput } from './components/IngredientInput'
+import { MealPlannerAgent } from './components/MealPlannerAgent'
 import { MealPlanBoard } from './components/MealPlanBoard'
 import { NutritionAnalysisPanel } from './components/NutritionAnalysisPanel'
 import { NutritionPreferencePanel } from './components/NutritionPreferencePanel'
@@ -154,6 +155,16 @@ function App() {
           </div>
         )}
       </main>
+
+      <MealPlannerAgent
+        context={{
+          ingredients,
+          goals,
+          bodyProfile,
+          plan,
+          calorieRecommendation,
+        }}
+      />
     </div>
   )
 }
