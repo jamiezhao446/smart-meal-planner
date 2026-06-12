@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
+import { askLlmAgent, isLlmAgentEnabled } from '../utils/agentApi'
 import {
   AGENT_STARTER_QUESTIONS,
   askMealPlannerAgent,
@@ -11,14 +12,17 @@ interface MealPlannerAgentProps {
 }
 
 export function MealPlannerAgent({ context }: MealPlannerAgentProps) {
+  const llmEnabled = isLlmAgentEnabled()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState<AgentMessage[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      content:
-        '你好，我是膳食规划助手。可以帮你测算「加食材会不会超标」、当前热量差额、食材清单等问题。试试下方快捷提问，或输入「帮助」。',
+      content: llmEnabled
+        ? '你好，我是智能膳食助手（LLM 模式）。可以用自然语言提问：假设加食材、营养分析、搭配建议、减脂思路等。'
+        : '你好，我是膳食规划助手（本地模式）。可测算加食材是否超标、热量差额等；配置后端 API 后可解锁更自由的对话。',
     },
   ])
   const listRef = useRef<HTMLDivElement>(null)
@@ -33,33 +37,61 @@ export function MealPlannerAgent({ context }: MealPlannerAgentProps) {
     [context],
   )
 
+  const scrollToBottom = useCallback(() => {
+    requestAnimationFrame(() => {
+      listRef.current?.scrollTo({
+        top: listRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    })
+  }, [])
+
   const sendQuestion = useCallback(
-    (text: string) => {
+    async (text: string) => {
       const q = text.trim()
-      if (!q) return
+      if (!q || loading) return
 
       const userMsg: AgentMessage = {
         id: crypto.randomUUID(),
         role: 'user',
         content: q,
       }
-      const answer = askMealPlannerAgent(q, context)
+
+      setMessages((prev) => [...prev, userMsg])
+      setInput('')
+      setLoading(true)
+      scrollToBottom()
+
+      const history = [...messages, userMsg]
+        .filter((m) => m.id !== 'welcome')
+        .map((m) => ({ role: m.role, content: m.content }))
+
+      let answer: string
+      try {
+        if (llmEnabled) {
+          answer = await askLlmAgent(history, context)
+        } else {
+          answer = askMealPlannerAgent(q, context)
+        }
+      } catch (err) {
+        const fallback = askMealPlannerAgent(q, context)
+        const errMsg = err instanceof Error ? err.message : '请求失败'
+        answer = llmEnabled
+          ? `（LLM 暂时不可用：${errMsg}，以下为本地估算）\n\n${fallback}`
+          : fallback
+      }
+
       const assistantMsg: AgentMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: answer,
       }
 
-      setMessages((prev) => [...prev, userMsg, assistantMsg])
-      setInput('')
-      requestAnimationFrame(() => {
-        listRef.current?.scrollTo({
-          top: listRef.current.scrollHeight,
-          behavior: 'smooth',
-        })
-      })
+      setMessages((prev) => [...prev, assistantMsg])
+      setLoading(false)
+      scrollToBottom()
     },
-    [context],
+    [context, llmEnabled, loading, messages, scrollToBottom],
   )
 
   return (
@@ -81,7 +113,9 @@ export function MealPlannerAgent({ context }: MealPlannerAgentProps) {
           <header className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3 text-white">
             <div>
               <h3 className="text-sm font-semibold">膳食规划助手</h3>
-              <p className="text-[10px] opacity-80">基于当前页面数据实时计算</p>
+              <p className="text-[10px] opacity-80">
+                {llmEnabled ? 'LLM + 精确计算工具' : '本地规则模式'}
+              </p>
             </div>
             <button
               type="button"
@@ -114,6 +148,13 @@ export function MealPlannerAgent({ context }: MealPlannerAgentProps) {
                 </div>
               </div>
             ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-500">
+                  思考中…
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="border-t border-slate-100 bg-slate-50 px-3 py-2">
@@ -122,8 +163,9 @@ export function MealPlannerAgent({ context }: MealPlannerAgentProps) {
                 <button
                   key={q}
                   type="button"
+                  disabled={loading}
                   onClick={() => sendQuestion(q)}
-                  className="rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-600 ring-1 ring-slate-200 hover:bg-emerald-50 hover:text-emerald-800"
+                  className="rounded-full bg-white px-2 py-0.5 text-[10px] text-slate-600 ring-1 ring-slate-200 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-50"
                 >
                   {q.length > 18 ? `${q.slice(0, 18)}…` : q}
                 </button>
@@ -133,18 +175,23 @@ export function MealPlannerAgent({ context }: MealPlannerAgentProps) {
               className="flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault()
-                sendQuestion(input)
+                void sendQuestion(input)
               }}
             >
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="例如：再加 500g 大米 7 天会超标吗？"
-                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                disabled={loading}
+                placeholder={
+                  llmEnabled
+                    ? '随便问：搭配、替换、加购、减脂…'
+                    : '例如：再加 500g 大米 7 天会超标吗？'
+                }
+                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-100"
               />
               <button
                 type="submit"
-                disabled={!input.trim()}
+                disabled={!input.trim() || loading}
                 className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
               >
                 发送
