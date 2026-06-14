@@ -8,15 +8,16 @@ const DEFAULT_ORIGINS = [
   'http://127.0.0.1:5173',
 ]
 
-function getAllowedOrigins(): string[] {
+function isAllowedOrigin(origin: string): boolean {
+  if (origin.endsWith('.vercel.app')) return true
   const extra = process.env.ALLOWED_ORIGINS?.split(',').map((s) => s.trim()) ?? []
-  return [...DEFAULT_ORIGINS, ...extra]
+  const allowed = [...DEFAULT_ORIGINS, ...extra]
+  return allowed.some((o) => origin === o || origin.startsWith(o))
 }
 
 function setCors(req: VercelRequest, res: VercelResponse): void {
   const origin = req.headers.origin
-  const allowed = getAllowedOrigins()
-  if (origin && allowed.some((o) => origin === o || origin.startsWith(o))) {
+  if (origin && isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
