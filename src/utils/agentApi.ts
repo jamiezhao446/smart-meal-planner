@@ -5,13 +5,25 @@ export interface AgentChatMessage {
   content: string
 }
 
+function isValidAgentUrl(url: string): boolean {
+  if (url.startsWith('/')) return url.startsWith('/api/')
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 function resolveApiUrl(): string | undefined {
   const fromEnv = import.meta.env.VITE_AGENT_API_URL as string | undefined
-  if (fromEnv?.trim()) return fromEnv.trim()
+  if (fromEnv?.trim()) {
+    const trimmed = fromEnv.trim()
+    if (isValidAgentUrl(trimmed)) return trimmed
+  }
 
-  // 部署在 Vercel 同域时，即使构建时未注入 env 也自动走 /api/agent
   if (typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app')) {
-    return '/api/agent'
+    return `${window.location.origin}/api/agent`
   }
 
   return undefined
@@ -36,7 +48,17 @@ export async function askLlmAgent(
     body: JSON.stringify({ messages, context }),
   })
 
-  const data = (await res.json()) as { reply?: string; error?: string }
+  const raw = await res.text()
+  let data: { reply?: string; error?: string }
+  try {
+    data = JSON.parse(raw) as { reply?: string; error?: string }
+  } catch {
+    throw new Error(
+      res.ok
+        ? 'API 返回格式异常'
+        : `API 错误 (${res.status}): ${raw.slice(0, 200)}`,
+    )
+  }
 
   if (!res.ok) {
     throw new Error(data.error ?? `请求失败 (${res.status})`)

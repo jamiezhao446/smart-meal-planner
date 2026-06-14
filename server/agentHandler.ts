@@ -85,14 +85,15 @@ export async function handleAgentChat(
   history: AgentChatMessage[],
   ctx: AgentContext,
 ): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.DEEPSEEK_API_KEY
+  if (!apiKey?.trim()) {
     throw new Error('服务端未配置 OPENAI_API_KEY')
   }
 
-  const baseUrl =
+  const baseUrl = (
     process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1'
-  const model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
+  ).trim()
+  const model = (process.env.OPENAI_MODEL ?? 'gpt-4o-mini').trim()
 
   const messages: OpenAIMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -104,7 +105,7 @@ export async function handleAgentChat(
   ]
 
   for (let step = 0; step < 6; step++) {
-    const data = await callLlm(messages, apiKey, baseUrl, model)
+    const data = await callLlm(messages, apiKey.trim(), baseUrl, model)
     const choice = data.choices[0]
     if (!choice) throw new Error('LLM 返回为空')
 

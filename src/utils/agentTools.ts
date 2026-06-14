@@ -36,7 +36,7 @@ export const AGENT_TOOL_DEFINITIONS = [
       name: 'get_calorie_status',
       description:
         '获取当前食材总热量、目标热量、差额与是否超标。用户问「现在热量多少」「会不会超标」「差多少」时调用。',
-      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -61,7 +61,6 @@ export const AGENT_TOOL_DEFINITIONS = [
           },
         },
         required: ['name', 'quantity'],
-        additionalProperties: false,
       },
     },
   },
@@ -70,7 +69,7 @@ export const AGENT_TOOL_DEFINITIONS = [
     function: {
       name: 'list_ingredients',
       description: '列出用户当前已录入的全部食材及各自热量。',
-      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -78,7 +77,7 @@ export const AGENT_TOOL_DEFINITIONS = [
     function: {
       name: 'get_nutrition_analysis',
       description: '分析当前食材的蛋白质、碳水、脂肪占比与营养建议。',
-      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -86,7 +85,7 @@ export const AGENT_TOOL_DEFINITIONS = [
     function: {
       name: 'get_goal_and_recommendation',
       description: '返回用户当前目标设置（天数、每日热量、餐数）及与身体推荐值的对比。',
-      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
@@ -95,7 +94,7 @@ export const AGENT_TOOL_DEFINITIONS = [
       name: 'get_calorie_recommendation',
       description:
         '根据身体信息（身高体重年龄等）计算 BMR、TDEE 与推荐每日摄入热量。',
-      parameters: { type: 'object', properties: {}, additionalProperties: false },
+      parameters: { type: 'object', properties: {} },
     },
   },
 ]
