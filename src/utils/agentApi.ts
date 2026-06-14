@@ -5,17 +5,27 @@ export interface AgentChatMessage {
   content: string
 }
 
-const API_URL = import.meta.env.VITE_AGENT_API_URL as string | undefined
+function resolveApiUrl(): string | undefined {
+  const fromEnv = import.meta.env.VITE_AGENT_API_URL as string | undefined
+  if (fromEnv?.trim()) return fromEnv.trim()
+
+  // 部署在 Vercel 同域时，即使构建时未注入 env 也自动走 /api/agent
+  if (typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app')) {
+    return '/api/agent'
+  }
+
+  return undefined
+}
 
 export function isLlmAgentEnabled(): boolean {
-  return Boolean(API_URL?.trim())
+  return Boolean(resolveApiUrl())
 }
 
 export async function askLlmAgent(
   messages: AgentChatMessage[],
   context: AgentContext,
 ): Promise<string> {
-  const url = API_URL?.trim()
+  const url = resolveApiUrl()
   if (!url) {
     throw new Error('未配置 VITE_AGENT_API_URL')
   }
