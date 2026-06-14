@@ -1,4 +1,5 @@
 import type { AgentContext } from './agentTools'
+import { sanitizeAgentReply } from './agentReplyFormat'
 
 export interface AgentChatMessage {
   role: 'user' | 'assistant'
@@ -68,5 +69,5 @@ export async function askLlmAgent(
     throw new Error('助手未返回内容')
   }
 
-  return data.reply
+  return sanitizeAgentReply(data.reply)
 }

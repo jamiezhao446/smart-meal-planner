@@ -3,6 +3,7 @@ import {
   type AgentContext,
   runAgentTool,
 } from '../src/utils/agentTools'
+import { sanitizeAgentReply } from '../src/utils/agentReplyFormat'
 
 export interface AgentChatMessage {
   role: 'user' | 'assistant'
@@ -34,7 +35,7 @@ const SYSTEM_PROMPT = `你是「智能膳食规划助手」，帮助用户理解
 规则：
 1. 涉及热量、是否超标、加食材模拟、营养数据时，必须调用提供的工具获取准确结果，禁止自行估算数字。
 2. 可以多步调用工具（例如先列食材再模拟加购）。
-3. 用简洁清晰的中文回答；数字保留整数 kcal 即可。
+3. 用简洁清晰的中文回答；数字保留整数 kcal 即可。使用纯文本，不要使用 Markdown（禁止 ** 加粗、# 标题、代码块等）。
 4. 若用户问法模糊，可先简要确认假设，再调用工具。
 5. 可回答开放问题：搭配建议、减脂思路、食材替换思路，但涉及具体热量时必须基于工具数据。
 6. 不要编造用户未录入的食材或身体数据。`
@@ -134,7 +135,7 @@ export async function handleAgentChat(
     }
 
     const text = assistantMsg.content?.trim()
-    if (text) return text
+    if (text) return sanitizeAgentReply(text)
     throw new Error('LLM 未返回有效文本')
   }
 
