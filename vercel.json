@@ -5,7 +5,7 @@
   "functions": {
     "api/agent.ts": {
       "maxDuration": 60,
-      "includeFiles": "src/**,server/**"
+      "includeFiles": "api/agent-bundle.cjs"
     }
   },
   "rewrites": [

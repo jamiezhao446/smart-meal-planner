@@ -15,6 +15,10 @@ dist-ssr
 .env.*
 !.env.example
 
+# Vercel API bundle (built by npm run build:api)
+api/agent-bundle.cjs
+api/agent-bundle.cjs.map
+
 # Editor
 .vscode/*
 !.vscode/extensions.json

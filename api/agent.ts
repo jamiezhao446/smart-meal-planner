@@ -1,6 +1,21 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { handleAgentChat } from '../server/agentHandler'
 import type { AgentContext } from '../src/utils/agentTools'
+
+type AgentBundle = {
+  handleAgentChat: (
+    history: { role: 'user' | 'assistant'; content: string }[],
+    ctx: AgentContext,
+  ) => Promise<string>
+}
+
+let bundlePromise: Promise<AgentBundle> | null = null
+
+function loadBundle(): Promise<AgentBundle> {
+  if (!bundlePromise) {
+    bundlePromise = import('./agent-bundle.cjs') as Promise<AgentBundle>
+  }
+  return bundlePromise
+}
 
 const DEFAULT_ORIGINS = [
   'https://jamiezhao446.github.io',
@@ -20,7 +35,7 @@ function setCors(req: VercelRequest, res: VercelResponse): void {
   if (origin && isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   res.setHeader('Vary', 'Origin')
 }
@@ -30,6 +45,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
+  }
+
+  if (req.method === 'GET') {
+    return res.status(200).json({ ok: true, service: 'meal-planner-agent' })
   }
 
   if (req.method !== 'POST') {
@@ -46,11 +65,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: '缺少 messages 或 context' })
     }
 
+    const { handleAgentChat } = await loadBundle()
     const reply = await handleAgentChat(body.messages, body.context)
     return res.status(200).json({ reply })
   } catch (err) {
     const message = err instanceof Error ? err.message : '未知错误'
-    console.error('[agent]', message)
+    const stack = err instanceof Error ? err.stack : undefined
+    console.error('[agent]', message, stack)
     return res.status(500).json({ error: message })
   }
 }
