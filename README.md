@@ -35,20 +35,30 @@ echo 'VITE_AGENT_API_URL=/api/agent' >> .env
 npm run dev
 ```
 
-### 部署后端 API（Vercel）
+### 部署到 Vercel（前端 + Agent API 一体）
 
-1. 在 [vercel.com](https://vercel.com) 导入本仓库
-2. **Framework Preset** 选 Other；根目录保持默认
-3. 在 Environment Variables 添加：
-   - `OPENAI_API_KEY`（必填）
-   - `OPENAI_BASE_URL`（可选，兼容 OpenAI 协议的国内接口）
-   - `OPENAI_MODEL`（默认 `gpt-4o-mini`）
-4. 部署后得到 URL，例如 `https://xxx.vercel.app/api/agent`
+1. 登录 [vercel.com](https://vercel.com) → **Add New… → Project**
+2. **Import** GitHub 仓库 `smart-meal-planner`
+3. Framework 会自动识别为 **Vite**，保持默认即可：
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. **Environment Variables** 添加：
 
-### 连接前端
+   | 变量名 | 值 | 说明 |
+   |--------|-----|------|
+   | `OPENAI_API_KEY` | `sk-...` | Agent API 必填 |
+   | `VITE_AGENT_API_URL` | `/api/agent` | 同域调用，填相对路径即可 |
+   | `OPENAI_BASE_URL` | （可选） | 如 `https://api.deepseek.com/v1` |
+   | `OPENAI_MODEL` | （可选） | 如 `deepseek-chat` |
 
-在 GitHub 仓库 **Settings → Secrets → Actions** 添加：
+   > 不要设 `VITE_BASE`，Vercel 域名下用根路径 `/` 即可。
+
+5. 点击 **Deploy**，完成后访问 `https://你的项目名.vercel.app`
+6. 右下角 💬 助手应显示 **「LLM + 精确计算工具」**
+
+### 仅部署 API（前端仍用 GitHub Pages）
+
+若前端继续用 GitHub Pages，Vercel 项目可只跑 `api/`，并在 GitHub Secret 配置完整 API 地址：
 
 - `VITE_AGENT_API_URL` = `https://xxx.vercel.app/api/agent`
 
-推送 `main` 后 Pages 会自动重新构建并启用 LLM 模式。未配置时助手自动降级为本地规则模式。
